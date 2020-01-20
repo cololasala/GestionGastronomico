@@ -1,0 +1,354 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    
+    <title>Version 1.0</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+		body {
+    		background-image: url('https://backgrounddownload.com/wp-content/uploads/2018/09/silver-gray-background-6.jpg');
+    	}
+    	.modal {
+  			text-align: center;
+  			padding: 0!important;
+		}
+
+		.modal:before {
+		  content: '';
+		  display: inline-block;
+		  height: 100%;
+		  vertical-align: middle;
+		  margin-right: -4px;
+		}
+
+		.modal-dialog {
+		  display: inline-block;
+		  text-align: left;
+		  vertical-align: middle;
+		}
+		.glyphicon.glyphicon-alert{
+    		font-size: 40px;
+		}
+		
+		#loader {
+		  position: absolute;
+		  left: 50%;
+		  top: 50%;
+		  z-index: 1;
+		  width: 150px;
+		  height: 150px;
+		  margin: -75px 0 0 -75px;
+		  border: 16px solid #f3f3f3;
+		  border-radius: 50%;
+		  border-top: 16px solid #a6a6a6;
+		  width: 110px;
+		  height: 110px;
+		  -webkit-animation: spin 2s linear infinite;
+		  animation: spin 1.5s linear infinite;
+		}
+
+		@-webkit-keyframes spin {
+		  0% { -webkit-transform: rotate(0deg); }
+		  100% { -webkit-transform: rotate(360deg); }
+		}
+
+		@keyframes spin {
+		  0% { transform: rotate(0deg); }
+		  100% { transform: rotate(360deg); }
+		}
+		
+		#my-conteiner {
+		  display: none;
+		}
+	</style>
+</head>
+<body onload="validateSpinner()" style=margin:0;>
+	<div id="loader"></div>
+	<div id="my-conteiner">
+		<div id="myAlertWarning" class="alert alert-warning" th:if="${showWarning}" style=text-align:center>
+			<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	  		<span class="glyphicon glyphicon-exclamation-sign"></span> El insumo no corresponde con la unidad de medida, por favor intente otra vez
+		</div>
+		<div id="myAlertDeleteProductSuccess" class="alert alert-success" style=text-align:center th:if=${myAlertDeleteProductSuccess}>
+			<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	  		<span class="glyphicon glyphicon-ok-circle"></span> Insumo eliminado de la factura correctamente
+		</div>
+			
+		<div style=text-align:center>
+			<h2><b>Factura de compra</b></h2>
+		</div>
+	
+	<form class="form-horizontal" action="/agregarInsumoModificar" th:object="${insumo}" method="post">
+		<div class="form-group">
+		<div class="col-sm-12">
+			<h4><strong>Carga de insumos</strong></h4>
+			<p class="font-weight-light font-size-11 mb-0" style=color:gray>(*) Campos obligatorios</p>
+			<br>
+	    	<div class="form-group row text-center">
+				<label for="insumo"  class="col-sm-1 control-label">Insumo:<sup
+						class="font-weight-light font-size-11 mb-0" style=color:gray>(*)</sup></label>
+				<div class="col-sm-2">
+				<select class="form-control" id="insumo" name="insumo" th:field="*{idInsumo}" onchange="functionInsumo()" required>
+					<option selected="selected" value=""></option>
+					<option th:each="ins: ${insumos}" th:value="${ins.idInsumo}" th:text="${ins.nombre}"></option>
+				</select>
+				</div>
+				<label for="precio-unitario"  class="col-sm-1 control-label">Precio:<sup
+						class="font-weight-light font-size-11 mb-0" style=color:gray>(*)</sup></label>
+				<div class="col-sm-2">
+				<input class="form-control" type="number" id="precio-unitario" th:field="*{precio}" min="1" oninput="validity.valid||(value='');" step="0.01"/>
+				</div>
+				<label for="unidad-medida" class="col-sm-1 control-label">U.Medida:<sup
+						class="font-weight-light font-size-11 mb-0" style=color:gray>(*)</sup></label>
+				<div class="col-sm-2">
+				<select class="form-control" id="unidad-medida" th:field="*{unidadMedida}" required>
+					<option selected="selected" value=""></option>
+					<option th:each="med: ${medida}" th:value="${med.idUnidadMedida}" th:text="${med.tipo}"></option>
+				</select>
+				</div>
+				<label for="cantidad" class="col-sm-1 control-label">Cantidad:<sup
+						class="font-weight-light font-size-11 mb-0" style=color:gray>(*)</sup></label>
+				<div class="col-sm-1">
+				<input class="form-control" type="number" id="cantidad" th:field="*{cantidadMinima}" min="1" oninput="validity.valid||(value='');" required/>
+				</div>
+				<div class="col-sm-1">
+				<input class="form-control btn btn-primary" id="agregar" type="submit" value="Agregar"/>
+				</div>
+			</div>
+		</div>
+		</div>		
+		</form>
+	
+	<h4>Listado de insumos de factura</h4>  
+		<table class="table table-bordered table-hover" style=background-color:white>
+			<thead style=background-color:#a6a6a6>
+				<tr>
+					<th>Nombre</th>
+					<th>Cantidad / Kg</th>
+					<th>Precio Unidad / Kg</th>
+					<th>Unidad Medida</th>
+					<th>Subtotal</th>
+					<th>Eliminar Insumo</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="ins: ${listaInsumos}">
+					<td th:text="${ins.nombre}"></td>
+					<td th:if="${ins.getUnidadMedida().getIdUnidadMedida() == 1}" th:text="${#numbers.formatDecimal(ins.cantidadMinima, 1, 'COMMA', 3, 'POINT')}"></td>
+					<td th:if="${ins.getUnidadMedida().getIdUnidadMedida() != 1}" th:text="${#numbers.formatDecimal(ins.cantidadMinima, 1, 'COMMA', 0, 'POINT')}"></td>
+					<td>$ <span th:text="${#numbers.formatDecimal(ins.precio, 1, 'COMMA', 2, 'POINT')}"></span></td>
+					<td th:text="${ins.getUnidadMedida().getTipo()}"></td>	
+					<td>$ <span th:text="${#numbers.formatDecimal(ins.precio * ins.cantidadMinima, 1, 'COMMA', 2, 'POINT')}"></span></td>
+	<!-- 				<td> <a th:href="@{'/modificarEliminarInsumo/' + ${ins.idInsumo}}" class="btn btn-danger btn-sm">
+	      				<span class="glyphicon glyphicon-trash"></span>
+	    			</a></td>  -->
+					<td>
+	    				<a class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${ins.idInsumo}">
+	 						<span class="glyphicon glyphicon-trash"></span>
+	 					</a>	
+			    		<div class="modal modal-warning fade in" th:id="modal-warning+${ins.idInsumo}">
+							<div class="modal-dialog">
+							        <div class="modal-content" style=text-align:center>
+							            <div class="modal-header">
+							                <button type="button" class="close" data-dismiss="modal">&times;</button>
+							                <h5 class="modal-title"><span class="glyphicon glyphicon-alert"></span></h5>
+							            </div>
+							            <div class="modal-body">
+							                <h4>¿Esta seguro que desea eliminar el insumo la factura?</h4>
+							            </div>
+							            <div class="modal-footer">
+							                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+							                <a type="button" class="btn btn-primary" th:href="@{'/modificarEliminarInsumo/' + ${ins.idInsumo}}">Aceptar</a>
+							            </div>
+							        </div>
+							 </div>
+						</div>
+	    			</td>
+				</tr>
+				<tr>
+					<td>----------------------</td>
+					<td>----------------------</td>
+					<td>----------------------</td>
+					<td>----------------------</td>
+					<td>----------------------</td>
+					<td>----------------------</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td><b>Total factura</b></td>
+					<td>$ <span th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')}"></span></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+		
+		<br>
+		
+		<h4><strong>Datos de factura</strong></h4>
+		<p class="font-size-11 mb-0" style=font-weight:100;color:gray>(*) Campos obligatorios</p>
+		<br>
+	 	<form class="form-horizontal" id="formFact" action="/modificarFactura" th:object="${factura}" method="post">
+	 	<input type="hidden" th:field=*{IdFactura}/>
+		<div class="form-group row">
+			<label for="proveedor" class="col-sm-1 control-label">Proveedor:<sup
+						class="font-weight-light font-size-11 mb-0" style=color:gray>(*)</sup></label>
+			<div class="col-sm-2">
+				<input class="form-control" type="text" th:value="${factura.getProveedor().getNombre()}" disabled/>
+			</div>
+			<label for="fecha" class="col-sm-1 control-label">Fecha:<sup
+						class="font-weight-light font-size-11 mb-0" style=color:gray>(*)</sup></label>
+			<div class="col-sm-2">
+				<input class="form-control" type="date" id="fecha" th:value="${factura.getFecha()}" th:field="*{fecha}" required/>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="nro-factura" class="col-sm-1 control-label">Nro fac:<sup
+						class="font-weight-light font-size-11 mb-0" style=color:gray>(*)</sup></label>
+			<div class="col-sm-2">
+				<input class="form-control" id="nro-factura" type="number" name="nro-factura" th:value="${factura.getNumeroFactura()}" th:field="*{numeroFactura}" onchange="myFunction(this.value)" style=color:none required>
+				<div id="error-nro" style=display:none;color:red>Ya existe ese numero de factura</div>
+			</div>
+			<label class="col-sm-1 control-label">Estado:<sup
+						class="font-weight-light font-size-11 mb-0" style=color:gray>(*)</sup></label>
+			<div class="col-sm-2">
+			  	<div class="form-check">
+	  				<input class="form-check-input" type="radio" name="radio-estado" id="no-paga" value="2" th:checked="${estado == 2}" th:field="*{estadoFactura}">                 
+	  				<label class="form-check-label" for="no-paga">
+	    			No Paga
+	  				</label>
+				</div>
+				<div class="form-check">
+				  <input class="form-check-input" type="radio" name="radio-estado" id="paga" value="1" th:checked="${estado == 1}" th:field="*{estadoFactura}">
+				  <label class="form-check-label" for="paga">
+				    Paga
+				  </label>
+	
+				</div>
+			</div>
+			
+		</div>
+	
+			<div class="form-group row">
+			<div class="col-sm-6 text-right">
+				<input class="btn btn-success" th:if="${listaInsumos.size() < 1}" type="submit" value="Grabar factura" data-toggle="tooltip" title="Debe haber al menos un insumo cargado para grabar la factura" disabled/>
+				<input id="botonGrabar" class="btn btn-success" th:if="${listaInsumos.size() >= 1}" type="submit" value="Grabar factura"/>
+			</div>
+		</div>
+	
+	<br>
+	 </form>
+	 <div style=text-align:right>
+		<a th:href="@{'/detalle/' + ${factura.getProveedor().getIdProveedor()}}">Volver a detalle</a>
+	</div>
+</div>	
+	<script>
+	var spinner = [[${spinner}]];
+/*	function val() {
+	    d = document.getElementById("categoria").value;
+	    alert(d);
+	}
+*/	var listaNroFactura = [[${listaNroFactura}]]
+	$("#myAlertWarning").delay(5000).slideUp(300, function() {
+	    $(this).alert('close');
+	});
+/*<![CDATA[*/
+var listaNroFacturas = [[${listaNroFacturas}]];
+
+/*]]>*/
+	function myFunction(val) {
+		for(i=0; i<listaNroFacturas.length; i++) {
+			if(listaNroFacturas[i] == val) {
+				document.getElementById("botonGrabar").disabled = true;
+				document.getElementById("nro-factura").style.color = "red";
+				document.getElementById("nro-factura").style.borderColor="red";
+				document.getElementById("error-nro").style.display = "block";
+				break;
+			} else {
+				document.getElementById("botonGrabar").disabled = false;
+				document.getElementById("error-nro").style.display = "none";
+				document.getElementById("nro-factura").style.color = "#555";
+				document.getElementById("nro-factura").style.borderColor="#ccc";
+			}
+		}
+	}
+	
+	function functionInsumo() {
+		
+		var idInsumo = parseInt(document.getElementById("insumo").value);
+		document.getElementById("cantidad").value = "";
+		document.getElementById("cantidad").removeAttribute("step",0.001);
+		switch(idInsumo) {
+		case 1:
+			document.getElementById("unidad-medida").value = 1;
+			document.getElementById("cantidad").setAttribute("step",0.001);
+			break;
+		case 2:
+			document.getElementById("unidad-medida").value = 2;
+			break;
+		case 3:
+			document.getElementById("unidad-medida").value = 3;
+			break;
+		default:
+			document.getElementById("unidad-medida").value = "";
+			break;
+		}
+//		document.getElementById("unidad-medida").disabled = true;
+	}
+	
+	function myFunction(val) {
+		document.getElementById("botonGrabar").disabled = false;
+		document.getElementById("error-nro").style.display = "none";
+		document.getElementById('nro-factura').style.color = "#555";
+		document.getElementById("nro-factura").style.borderColor="#ccc";
+		if (document.getElementById("proveedor").value == 1) {
+			if(listaNroFacturasP1.includes(parseInt(val))){
+				document.getElementById("botonGrabar").disabled = true;
+				document.getElementById("nro-factura").style.color = "red";
+				document.getElementById("nro-factura").style.borderColor="red";
+				document.getElementById("error-nro").style.display = "block";
+			}
+		} else if(document.getElementById("proveedor").value == 2) {
+			if(listaNroFacturasP2.includes(parseInt(val))){
+				document.getElementById("botonGrabar").disabled = true;
+				document.getElementById("nro-factura").style.color = "red";
+				document.getElementById("nro-factura").style.borderColor="red";
+				document.getElementById("error-nro").style.display = "block";
+			}
+		} else {
+			if(listaNroFacturasP3.includes(parseInt(val))){
+				document.getElementById("botonGrabar").disabled = true;
+				document.getElementById("nro-factura").style.color = "red";
+				document.getElementById("nro-factura").style.borderColor="red";
+				document.getElementById("error-nro").style.display = "block";
+			}
+		}
+	}
+	
+	// spinner control
+	var myVar;
+		function validateSpinner() {
+			if(spinner == true) {
+				myFunctionForSpinner();
+			} else {
+				showPage();
+			}
+		}
+		function myFunctionForSpinner() {
+			myVar = setTimeout(showPage, 1500);  
+		}
+		function showPage() {
+		  document.getElementById("loader").style.display = "none";
+		  document.getElementById("my-conteiner").style.display = "block";
+		}
+		
+	// date to tomorrow
+	fecha.max = new Date().toISOString().split("T")[0];
+	</script>
+</body>
+
+</html>

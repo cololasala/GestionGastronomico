@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap.min.js"></script>
+	<style>
+		body {
+    		background-image: url('https://backgrounddownload.com/wp-content/uploads/2018/09/silver-gray-background-6.jpg');
+    	}
+		.col-sm-6 {
+			width:17%;
+		}
+		sup {
+			font-size:12px;
+		}
+		
+		#loader {
+		  position: absolute;
+		  left: 50%;
+		  top: 50%;
+		  z-index: 1;
+		  width: 150px;
+		  height: 150px;
+		  margin: -75px 0 0 -75px;
+		  border: 16px solid #f3f3f3;
+		  border-radius: 50%;
+		  border-top: 16px solid #a6a6a6;;
+		  width: 110px;
+		  height: 110px;
+		  -webkit-animation: spin 2s linear infinite;
+		  animation: spin 1.5s linear infinite;
+		}
+
+		@-webkit-keyframes spin {
+		  0% { -webkit-transform: rotate(0deg); }
+		  100% { -webkit-transform: rotate(360deg); }
+		}
+
+		@keyframes spin {
+		  0% { transform: rotate(0deg); }
+		  100% { transform: rotate(360deg); }
+		}
+		
+		#my-conteiner {
+		  display: none;
+		}
+	</style>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body onload="myFunction()" style=margin:0;>
+	<div id="loader"></div>
+	<div id="my-conteiner">
+		<div style=text-align:center>
+			<h2><b>Listado proveedores</b></h2>
+			<br/>
+		</div>
+		<table id="tabla-proveedores" class="table table-bordered table-hover" style=align:center;background-color:white>
+		<thead style=background-color:#a6a6a6>
+			<tr>
+				<th>Nombre <sup>↑↓</sup></th>
+				<th>Telefono <sup>↑↓</sup></th>
+				<th>Ciudad <sup>↑↓</sup></th>
+				<th>Correro Electronico <sup>↑↓</sup></th>
+				<th>Estado con proveedor <sup>↑↓</sup></th>
+				<th>Detalle facturas</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="pro:${proveedores}">
+				<td th:text="${pro.nombre}"></td>
+				<td th:text="${pro.telefono}"></td>
+				<td th:text="${pro.ciudad}"></td>
+				<td th:text="${pro.email}"></td>
+				<td th:text="${pro.estadoProveedor} ? 'TIENE DEUDA PENDIENTE' : 'SIN DEUDA REGISTRADA'" th:style="${pro.estadoProveedor} ? 'background-color:#ffffb3' : 'background-color:#b3ffb3' "></td>
+				<td><a th:href="@{'/detalle/' + ${pro.idProveedor}}">Ver facturas</a></td>
+			</tr>
+		</tbody>
+		</table>
+		<div style=text-align:right>
+			<a th:href="@{'/inicio/'}" >Volver a inicio</a>
+		</div>
+	</div>
+</body>
+<script>
+	$(document).ready(function() {
+	    $('#tabla-proveedores').DataTable({
+	    	"language": {
+	    	      "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
+	    	    }
+	    });
+	});
+	
+	var myVar;
+	
+	function myFunction() {
+	  myVar = setTimeout(showPage, 1500);
+	}
+
+	function showPage() {
+	  document.getElementById("loader").style.display = "none";
+	  document.getElementById("my-conteiner").style.display = "block";
+	}
+</script>
+
+</html>

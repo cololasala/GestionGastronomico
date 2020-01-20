@@ -1,0 +1,102 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" style=height:100%>
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    
+    <title>Version 1.0</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+		body {
+    		background-image: url('https://backgrounddownload.com/wp-content/uploads/2018/09/silver-gray-background-6.jpg');
+    	}
+    	
+    	#loader {
+		  position: absolute;
+		  left: 50%;
+		  top: 50%;
+		  z-index: 1;
+		  width: 150px;
+		  height: 150px;
+		  margin: -75px 0 0 -75px;
+		  border: 16px solid #f3f3f3;
+		  border-radius: 50%;
+		  border-top: 16px solid #a6a6a6;
+		  width: 110px;
+		  height: 110px;
+		  -webkit-animation: spin 2s linear infinite;
+		  animation: spin 1.5s linear infinite;
+		}
+
+		@-webkit-keyframes spin {
+		  0% { -webkit-transform: rotate(0deg); }
+		  100% { -webkit-transform: rotate(360deg); }
+		}
+
+		@keyframes spin {
+		  0% { transform: rotate(0deg); }
+		  100% { transform: rotate(360deg); }
+		}
+		
+		#my-conteiner {
+		  display: none;
+		}
+	</style>
+</head>
+	<body onload="myFunction()" style=margin:0;>
+	<div id="loader"></div>
+		<div id="my-conteiner">
+			<div style=text-align:center>
+				<h2><b>Insumos de la factura pagada</b></h2>
+				<br>
+			</div>
+			<table class="table table-bordered table-hover" style=background-color:white>
+			<thead style=background-color:#a6a6a6>
+				<tr>
+					<th>Insumo</th>
+					<th>Unidad Medida</th>
+					<th>Cantidad / Kg</th>
+					<th>Precio Unidad / Kg</th>
+					<th>Subtotal</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="ins:${insumos}">
+					<td th:text="${ins.getNombre()}"></td>
+					<td th:text="${ins.getUnidadMedida().getTipo()}"></td>
+					<td th:if="${ins.getUnidadMedida().getIdUnidadMedida() == 1}" th:text="${#numbers.formatDecimal(ins.cantidadMinima, 1, 'COMMA', 3, 'POINT')}"></td>
+					<td th:if="${ins.getUnidadMedida().getIdUnidadMedida() != 1}" th:text="${#numbers.formatDecimal(ins.cantidadMinima, 1, 'COMMA', 0, 'POINT')}"></td>
+					<td>$ <span th:text="${#numbers.formatDecimal(ins.getPrecio(), 1, 'COMMA', 2, 'POINT')}"></span></td>
+					<td>$ <span th:text="${#numbers.formatDecimal(ins.getPrecio() * ins.getCantidadMinima(), 1, 'COMMA', 2, 'POINT')}"></span></td>
+				</tr>
+				<tr>
+					<td>-----------------</td>
+					<td>-----------------</td>
+					<td>-----------------</td>
+					<td><b>Total factura</b></td>
+					<td>$ <span th:text="${#numbers.formatDecimal(factura.getTotalFactura(), 1, 'COMMA', 2, 'POINT')}"></span></td>
+				</tr>
+			</tbody>
+			</table>
+			<div style=text-align:right>
+				<a th:href="@{'/detalle/' + ${proveedor.getIdProveedor()}}" >Volver a detalle</a>
+			</div>
+		</div>
+		<script type="text/javascript">
+		var myVar;
+		
+		function myFunction() {
+		  myVar = setTimeout(showPage, 1500);
+		}
+
+		function showPage() {
+		  document.getElementById("loader").style.display = "none";
+		  document.getElementById("my-conteiner").style.display = "block";
+		}
+		</script>
+	</body>
+</html>
+
+
+

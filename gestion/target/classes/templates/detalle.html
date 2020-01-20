@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap.min.js"></script>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+    	body {
+    		background-image: url('https://backgrounddownload.com/wp-content/uploads/2018/09/silver-gray-background-6.jpg');
+    	}
+		.col-sm-6 {
+			width:17%;
+		}
+		sup {
+			font-size:12px;
+		}
+		.modal {
+  			text-align: center;
+  			padding: 0!important;
+		}
+
+		.modal:before {
+		  content: '';
+		  display: inline-block;
+		  height: 100%;
+		  vertical-align: middle;
+		  margin-right: -4px;
+		}
+
+		.modal-dialog {
+		  display: inline-block;
+		  text-align: left;
+		  vertical-align: middle;
+		}
+		.glyphicon.glyphicon-alert{
+    		font-size: 40px;
+		}
+		
+		#loader {
+		  position: absolute;
+		  left: 50%;
+		  top: 50%;
+		  z-index: 1;
+		  width: 150px;
+		  height: 150px;
+		  margin: -75px 0 0 -75px;
+		  border: 16px solid #f3f3f3;
+		  border-radius: 50%;
+		  border-top: 16px solid #a6a6a6;
+		  width: 110px;
+		  height: 110px;
+		  -webkit-animation: spin 2s linear infinite;
+		  animation: spin 1.5s linear infinite;
+		}
+
+		@-webkit-keyframes spin {
+		  0% { -webkit-transform: rotate(0deg); }
+		  100% { -webkit-transform: rotate(360deg); }
+		}
+
+		@keyframes spin {
+		  0% { transform: rotate(0deg); }
+		  100% { transform: rotate(360deg); }
+		}
+		
+		#my-conteiner {
+		  display: none;
+		}
+	</style>
+</head>
+<body onload="myFunction()" style=margin:0;>
+	<div id="loader"></div>
+<div id="my-conteiner">
+	<div id="myAlertSaveSuccess" class="alert alert-success" style=text-align:center th:if=${showAlert}>
+		<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  		<span class="glyphicon glyphicon-ok-circle"></span> Factura creada exitosamente
+	</div>
+	<div id="myAlertUpdateSuccess" class="alert alert-info" style=text-align:center th:if=${showUpdate}>
+		<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  		<span class="glyphicon glyphicon-refresh"></span> Factura actualizada exitosamente
+	</div>
+	<div id="myAlertIgual" class="alert alert-warning" style=text-align:center th:if=${showWarningIgual}>
+		<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  		<span class="glyphicon glyphicon-exclamation-sign"></span> No se registraron nuevos cambios, por favor intente nuevamente
+	</div>
+	<div id="myAlertDeleteSuccess" class="alert alert-success" th:if="${showSuccess}" style=text-align:center>
+		<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  		<span class="glyphicon glyphicon-ok-circle"></span> Factura eliminada exitosamente
+	</div>
+	
+	<div id="myAlertWarning" class="alert alert-warning" th:if="${showWarning}" style=text-align:center>
+		<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  		<span class="glyphicon glyphicon-exclamation-sign"></span> No es posible eliminar factura
+	</div>
+	<div th:if="${facturas.size() > 0}">
+		<h2 style=text-align:center;font-weight:bold; th:text="'Listado facturas del proveedor: '+ ${proveedor.getNombre()}"></h2>
+		<div style=text-align:center>
+
+			<h3><span style=background-color:#b3ffb3>Total pagado: $ <span th:text="${#numbers.formatDecimal(pagado, 1, 'COMMA', 2, 'POINT')}"></span></span></h3>
+			<h3 th:if="${deuda > 0}"><span style=background-color:#ffffb3>Total deuda: $ <span th:text="${#numbers.formatDecimal(deuda, 1, 'COMMA', 2, 'POINT')}"></span></span></h3>
+		</div>
+		<br>
+		<table id="tabla-detalle" class="table table-bordered table-hover" style=align:center>
+		<thead style=background-color:#a6a6a6>
+			<tr>
+				<th>Numero <sup>↑↓</sup></th>
+				<th>Estado <sup>↑↓</sup></th>
+				<th>Fecha creacion <sup>↑↓</sup></th>
+				<th>Fecha de pago <sup>↑↓</sup></th>
+				<th>Saldo <sup>↑↓</sup></th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="fac: ${facturas}" th:style="${fac.getEstadoFactura().getIdEstadoFactura() == 1 ? 'background-color:#b3ffb3' : 'background-color:#ffffb3' }" th:if=${fac.isEliminada()==false}>
+				<td th:text="${fac.numeroFactura}"></td>
+				<td th:text="${fac.getEstadoFactura().getEstado()}"></td>
+				<td th:text="${fac.fecha}"></td>
+				<td th:text="${fac.getFechaPago()} ?: '-----------------'"></td>
+				<td>$ <span th:text="${#numbers.formatDecimal(fac.getTotalFactura(), 1, 'COMMA', 2, 'POINT')}"></span></td>
+				<td>
+				<a th:href="@{'/resumenFactura/'+ ${proveedor.getIdProveedor()} + '/factura/' + ${fac.getIdFactura()}}" class="btn btn-info btn-sm" th:if=${fac.getEstadoFactura().getIdEstadoFactura()==1}>                           
+	      			<span class="glyphicon glyphicon-eye-open"></span>
+	      		</a>
+	    		<a th:href="@{'/modificarFactura/'+ ${proveedor.getIdProveedor()} + '/factura/' + ${fac.getIdFactura()}}" class="btn btn-primary btn-sm" th:if=${fac.getEstadoFactura().getIdEstadoFactura()==2}>
+	      			<span class="glyphicon glyphicon-pencil"></span>
+	      		</a>
+<!-- 	      		<a id="eliminar" th:href="@{'/eliminarFactura/' + ${proveedor.getIdProveedor()} + '/factura/' + ${fac.getIdFactura()}}" class="btn btn-danger btn-sm" th:if=${fac.getEstadoFactura().getIdEstadoFactura()==2}>
+	      			<span class="glyphicon glyphicon-trash"></span>
+	    		</a>  -->
+	    		<a class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${fac.getIdFactura()}" th:if=${fac.getEstadoFactura().getIdEstadoFactura()==2}>
+ 					<span class="glyphicon glyphicon-trash"></span>
+ 				</a>	
+	    		<div class="modal modal-warning fade in" th:id="modal-warning+${fac.getIdFactura()}">
+					<div class="modal-dialog">
+					        <div class="modal-content" style=text-align:center>
+					            <div class="modal-header">
+					                <button type="button" class="close" data-dismiss="modal">&times;</button>
+					                <h5 class="modal-title"><span class="glyphicon glyphicon-alert"></span></h5>
+					            </div>
+					            <div class="modal-body">
+					                <h4>¿Esta seguro que desea eliminar la factura?</h4>
+					            </div>
+					            <div class="modal-footer">
+					                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+					                <a type="button" class="btn btn-primary" th:href="@{'/eliminarFactura/' + ${proveedor.getIdProveedor()} + '/factura/' + ${fac.getIdFactura()}}">Aceptar</a>
+					            </div>
+					        </div>
+					 </div>
+				</div>
+	      		</td>
+			</tr>
+		</tbody>
+		</table>
+		<div style=text-align:right>
+			<a th:href="@{'/proveedores/'}" >Volver a listado</a>
+		</div>
+	</div>
+	
+	<div style=text-align:center th:unless= "${facturas.size() > 0}">
+		<h2 style=font-weight:bold; th:text="'No se tienen facturas registradas del proveedor: '+ ${proveedor.getNombre()}"></h2>
+		<br>
+			<div style=text-align:center>
+				<a th:href="@{'/proveedores/'}" >Volver a listado</a>
+			</div>
+	</div>
+ </div>
+	<script>
+		$(".alert").delay(5000).slideUp(300, function() {
+		    $(this).alert('close');
+		});
+		
+		$(document).ready(function() {
+		    $('#tabla-detalle').DataTable({
+		    	"language": {
+		    	      "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
+		    	    }
+		    });
+		});
+		
+		var myVar;
+		
+		function myFunction() {
+		  myVar = setTimeout(showPage, 1500);
+		}
+
+		function showPage() {
+		  document.getElementById("loader").style.display = "none";
+		  document.getElementById("my-conteiner").style.display = "block";
+		}
+	</script>
+</body>
+</html>

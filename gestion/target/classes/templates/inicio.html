@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" style=height:100%>
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <title>Version 1.0</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+    	body {
+    		background-image: url('https://backgrounddownload.com/wp-content/uploads/2018/09/silver-gray-background-6.jpg');
+    	}
+    	.footer {
+		   	position: fixed;
+		   	left: 0;
+		   	bottom: 0;
+		   	width: 100%;
+		   	text-align: center;
+		}
+		
+		#my-conteiner {
+			margin-top:17%;
+		}
+		
+		#loader {
+		  position: absolute;
+		  left: 50%;
+		  top: 50%;
+		  z-index: 1;
+		  width: 150px;
+		  height: 150px;
+		  margin: -75px 0 0 -75px;
+		  border: 16px solid #f3f3f3;
+		  border-radius: 50%;
+		  border-top: 16px solid #a6a6a6;
+		  width: 110px;
+		  height: 110px;
+		  -webkit-animation: spin 2s linear infinite;
+		  animation: spin 1.5s linear infinite;
+		}
+
+		@-webkit-keyframes spin {
+		  0% { -webkit-transform: rotate(0deg); }
+		  100% { -webkit-transform: rotate(360deg); }
+		}
+
+		@keyframes spin {
+		  0% { transform: rotate(0deg); }
+		  100% { transform: rotate(360deg); }
+		}
+		
+		#my-conteiner {
+		  display: none;
+		  text-align: center;
+		}
+    </style>
+</head>
+<body onload="myFunction()" style=margin:0;>
+	<div id="loader"></div>
+	<div class="container" id="my-conteiner" style=text-align:center;display:none;>
+	<h2><b>Bienvenido al modulo de compras</b><span class="glyphicon glyphicon-shopping-cart" style=color:gray;display:center></span></h2>
+	<br>
+		<div class="panel-group">
+			<div class="panel panel-default">
+				<div class="panel-heading" style=background-color:#a6a6a6><b>Seleccione que desea realizar</b></div>
+				<div class="panel-body">
+					<p><a th:href="@{/factura}">Insertar nueva factura de compra</a></p>
+					<p><a th:href="@{/proveedores}">Verificar listado de proveedores</a></p>
+				</div>
+			</div>
+		</div>
+		<div class="footer" style=text-align:center;>Copyright&copy; 2019 - Página creada por Luciano Lasala - Todos los derechos reservados</div>
+	</div>
+	
+	<script>
+		var myVar;
+	
+		function myFunction() {
+		  myVar = setTimeout(showPage, 1500);
+		}
+	
+		function showPage() {
+		  document.getElementById("loader").style.display = "none";
+		  document.getElementById("my-conteiner").style.display = "block";
+		}
+	</script>
+</body>
+	
+</html>
